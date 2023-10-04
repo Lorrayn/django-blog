@@ -1,6 +1,7 @@
 import json
 
 #django
+
 from django.core.serializers.json import DjangoJSONEncoder
 from django.shortcuts import render , get_object_or_404
 from django.http import HttpResponse
@@ -10,6 +11,8 @@ from blog.models import Post
 from blog.forms import PostModelForm
 from django.views.generic.edit import CreateView
 from django.urls import reverse_lazy
+from django.contrib import messages
+
 
 
 def get_all_posts(request):
@@ -60,8 +63,13 @@ class PostCreateView(CreateView):
     model = Post
     template_name = 'post/post_form.html'
     #fields = ('body_text', )
-    success_url = reverse_lazy('posts_list')
+    success_url = reverse_lazy('posts_all') 
     form_class = PostModelForm
+    success_message = 'Postagem salva com sucesso.'
+
+    def form_valid(self, request, *args, **kwargs):
+        messages.success(self.request, self.success_message)
+        return super(PostCreateView, self).form_valid(request, *args, **kwargs) 
 
 @csrf_exempt
 def create_post(request):
