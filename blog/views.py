@@ -9,7 +9,7 @@ from django.views.generic  import DetailView,ListView,TemplateView
 from django.views.decorators.csrf import csrf_exempt
 from blog.models import Post 
 from blog.forms import PostModelForm
-from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -125,3 +125,11 @@ def get_context_data(self, **kwargs):
     context = super(PostUpdateView, self).get_context_data(**kwargs)
     context['form_title'] = 'Editando o post'
     return context
+class PostDeleteView(LoginRequiredMixin, DeleteView):
+    model = Post
+    template_name = 'post/post_confirm_delete_form.html'
+    success_url = reverse_lazy('posts_all')
+    success_message = 'A postagem foi excluída com sucesso.'
+def form_valid(self, form):
+    messages.success(self.request, self.success_message)
+    return super(PostDeleteView, self).form_valid(form)
