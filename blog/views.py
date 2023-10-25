@@ -9,7 +9,7 @@ from django.views.generic  import DetailView,ListView,TemplateView
 from django.views.decorators.csrf import csrf_exempt
 from blog.models import Post 
 from blog.forms import PostModelForm
-from django.views.generic.edit import CreateView
+from django.views.generic.edit import CreateView, UpdateView
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -70,6 +70,11 @@ class PostCreateView(LoginRequiredMixin,CreateView):
     form_class = PostModelForm
     success_message = 'Postagem salva com sucesso.'
 
+    def get_context_data(self, **kwargs):
+        context = super(PostCreateView, self).get_context_data(**kwargs)
+        context['form_title'] = 'Criando um post'
+        return context
+
     def form_valid(self, request, *args, **kwargs):
         messages.success(self.request, self.success_message)
         return super(PostCreateView, self).form_valid(request, *args, **kwargs) 
@@ -106,3 +111,17 @@ class PostListView(ListView):
     context_object_name = 'posts'
 class SobreTemplateView(TemplateView):
     template_name = 'post/sobre.html'
+class PostUpdateView(LoginRequiredMixin, UpdateView):
+    model = Post
+    template_name = 'post/post_form.html'
+    success_url = reverse_lazy('posts_all')
+    form_class = PostModelForm
+    success_message = 'Postagem salva com sucesso.'
+def form_valid(self, form):
+    messages.success(self.request, self.success_message)
+    return super(PostUpdateView, self).form_valid(form)
+def get_context_data(self, **kwargs):
+
+    context = super(PostUpdateView, self).get_context_data(**kwargs)
+    context['form_title'] = 'Editando o post'
+    return context
