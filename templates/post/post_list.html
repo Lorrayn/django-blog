@@ -25,6 +25,12 @@
         {% if post.categoria %}
           <span>Categoria: {{ post.categoria }}</span>
         {% endif %}
+        {%if post.autor%}
+          <span>Autor: {{post.autor.username}}</span>
+        {% else %}
+          <span>Autor: Desconhecido</span>
+        {% endif %}
+
         {% endfor %}
     </div>
 </div>
