@@ -3,7 +3,7 @@ import json
 #django
 
 from django.core.serializers.json import DjangoJSONEncoder
-from django.shortcuts import render , get_object_or_404
+from django.shortcuts import render , get_object_or_404,redirect
 from django.http import HttpResponse
 from django.views.generic  import DetailView,ListView,TemplateView
 from django.views.decorators.csrf import csrf_exempt
@@ -14,7 +14,9 @@ from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-
+from django.template.loader import render_to_string
+from django.core.mail import send_mail
+from django.conf import settings
 
 
 def get_all_posts(request):
@@ -134,3 +136,33 @@ class PostDeleteView(LoginRequiredMixin, DeleteView):
 def form_valid(self, form):
     messages.success(self.request, self.success_message)
     return super(PostDeleteView, self).form_valid(form)
+
+
+def post_send(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    post_url = reverse_lazy('post_detail', args=[post_id])
+    try:
+        email = request.POST.get('email')
+        if len(email) < 5:
+            raise ValueError('E-mail inválido')
+        link = f'{request._current_scheme_host}{post_url}'
+        template = "post/post_send"
+        text_message = render_to_string(f"{template}.txt", {'post_link':link})
+        html_menssage = render_to_string(f"{template}.html", {'post_link':link})
+        send_mail(
+            subject= "Este assunto pode te interessar!",
+            message = text_message ,
+            from_email = settings.EMAIL_HOST_USER,
+            recipient_list={email},
+            html_message=html_menssage,
+        )
+        messages.success(
+            request, 'Postagem compartilhada com sucesso'
+        )
+    except ValueError as error:
+        messages.error(request, error)
+    except:
+        messages.error(
+            request, ' Error ao enviar a menssagem'
+        )
+    return redirect(post_url)
